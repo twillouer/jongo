@@ -16,10 +16,19 @@
 
 package org.jongo.spike;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
+import com.mongodb.WriteResult;
+import org.bson.types.ObjectId;
+import org.jongo.Jongo;
 import org.jongo.MongoCollection;
+import org.jongo.ResultHandler;
 import org.jongo.marshall.jackson.JacksonEngine;
+import org.jongo.marshall.jackson.JacksonMapper;
 import org.jongo.marshall.jackson.configuration.Mapping;
 import org.jongo.model.Friend;
 import org.jongo.util.JSONResultHandler;
@@ -90,11 +99,75 @@ public class QuestionsSpikeTest extends JongoTestCase {
         assertThat(monday).contains("\"days\" : [ { \"name\" : \"monday\"}]");
     }
 
+    @Test
+    public void testJacksonProblem() throws Exception {
+        System.out.println("pojo jongo test");
+
+        JacksonMapper.Builder builder = new JacksonMapper.Builder()
+                .enable(MapperFeature.USE_ANNOTATIONS)
+                .enable(MapperFeature.AUTO_DETECT_GETTERS)
+                .enable(MapperFeature.AUTO_DETECT_SETTERS);
+
+
+        Jongo jongo = new Jongo(getDatabase(), builder.build());
+        MongoCollection jongoTestCollection = jongo.getCollection("friends");
+
+        PojoTestDocument pojoTestDocument = new PojoTestDocument();
+        pojoTestDocument.setAccessorJSONProperty("accessorValue");
+        jongoTestCollection.save(pojoTestDocument);
+
+        jongoTestCollection.findOne().map(new ResultHandler<DBObject>() {
+            public DBObject map(DBObject result) {
+                assertThat(result.get("privateProperty")).isNull();
+                assertThat(result.get("accessorJSONProperty")).isEqualTo("accessorValue");
+                return result;
+            }
+        });
+
+    }
+
     private static class Friends {
         private List<Friend> friends = new ArrayList<Friend>();
 
         public void add(Friend buddy) {
             friends.add(buddy);
         }
+    }
+
+    private static class PojoTestDocument {
+
+        /**
+         * Empty constructor required by Jackson mapper
+         */
+        public PojoTestDocument() {
+        }
+
+        /**
+         * Primary unique key mongo, generated upon insert
+         */
+        private ObjectId _id;
+
+        @JsonIgnore
+        private String privateProperty= "privateValue";
+
+        @JsonIgnore
+        protected String protectedProperty= "protectedValue";
+
+        public String publicProperty = "publicValue";
+
+        public String emptyPublicProperty;
+
+        @JsonIgnore
+        protected String accessorProperty;
+
+        @JsonProperty("accessorJSONProperty")
+        public String getAccessorJSONProperty() {
+            return accessorProperty;
+        }
+
+        public void setAccessorJSONProperty(String a) {
+            this.accessorProperty = a;
+        }
+
     }
 }
