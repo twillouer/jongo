@@ -16,8 +16,11 @@
 
 package org.jongo.spike;
 
+import com.mongodb.DB;
 import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
+import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.JacksonEngine;
 import org.jongo.marshall.jackson.configuration.Mapping;
@@ -90,11 +93,70 @@ public class QuestionsSpikeTest extends JongoTestCase {
         assertThat(monday).contains("\"days\" : [ { \"name\" : \"monday\"}]");
     }
 
+
+    @Test
+    //https://groups.google.com/forum/#!msg/jongo-user/4OOvnqXuFro/jBcahFnTi9EJ
+    public void pipeErrorDuringSerialization() throws Exception {
+
+        MongoClient mongo = new MongoClient("localhost", 27017);
+
+        DB db = mongo.getDB("mydatabase");
+
+        Jongo jongo = new Jongo(db);
+
+        Boy b = new Boy("Frank", "Joe");
+
+        jongo.getCollection("boys").save(b);
+    }
+
     private static class Friends {
         private List<Friend> friends = new ArrayList<Friend>();
 
         public void add(Friend buddy) {
             friends.add(buddy);
         }
+    }
+
+    public static class Boy {
+
+
+        private String fname;
+
+        private String lname;
+
+
+        public String getFname() {
+
+            return fname;
+
+        }
+
+        public void setFname(String fname) {
+
+            this.fname = fname;
+
+        }
+
+        public String getLname() {
+
+            return lname;
+
+        }
+
+        public void setLname(String lname) {
+
+            this.lname = lname;
+
+        }
+
+
+        public Boy(String fName, String lName) {
+
+            fname = fName;
+
+            lname = lName;
+
+        }
+
     }
 }
