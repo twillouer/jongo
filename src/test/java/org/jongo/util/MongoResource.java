@@ -16,6 +16,7 @@
 
 package org.jongo.util;
 
+import com.foursquare.fongo.Fongo;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.WriteConcern;
@@ -43,7 +44,7 @@ public class MongoResource {
         if (isLocal != null && isLocal.equals("true")) {
             return LocalMongo.instance;
         } else {
-            return EmbeddedMongo.instance;
+            return FongoInstance.instance;
         }
     }
 
@@ -92,7 +93,16 @@ public class MongoResource {
         }
     }
 
-    /**
+    public static class FongoInstance {
+
+      public static Mongo instance = getInstance();
+
+      private static Mongo getInstance() {
+          return new Fongo("test").getMongo();
+      }
+    }
+
+  /**
      * We use deprecated Mongo constructor to ensure backward compatibility with old drivers during compatibility tests.
      * see src/test/sh/run-tests-against-all-driver-versions.sh
      */

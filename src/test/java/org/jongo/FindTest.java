@@ -16,6 +16,9 @@
 
 package org.jongo;
 
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.MongoClient;
 import com.mongodb.ReadPreference;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.MarshallingException;
@@ -140,6 +143,7 @@ public class FindTest extends JongoTestCase {
 
         /* then */
         ExposableFriend john = friends.next();
+      System.out.println(john.getId().getClass());
         assertThat(john.getId()).isEqualTo(id);
         assertThat(john.getName()).isEqualTo("John");
         assertThat(friends.hasNext()).isFalse();

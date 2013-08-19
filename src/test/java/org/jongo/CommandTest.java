@@ -81,7 +81,7 @@ public class CommandTest extends JongoTestCase {
     public void canRunAGeoNearCommand() throws Exception {
 
         MongoCollection safeCollection = collection.withWriteConcern(WriteConcern.SAFE);
-        safeCollection.insert("{loc:{lat:48.690833,lng:9.140556}, name:'Paris'}");
+        safeCollection.insert("{loc:{lng:48.690833,lat:9.140556}, name:'Paris'}");
         safeCollection.ensureIndex("{loc:'2d'}");
 
         List<Location> locations = jongo.runCommand("{ geoNear : 'friends', near : [48.690,9.140], spherical: true}")
@@ -119,7 +119,7 @@ public class CommandTest extends JongoTestCase {
 
     @Test
     public void canRunInvalidCommand() throws Exception {
-        Validate status = jongo.runCommand("{forceerror:1}").as(Validate.class);
+        Validate status = jongo.runCommand("{forced error:1}").as(Validate.class);
 
         assertThat(status.ok).isEqualTo("0.0");
     }
