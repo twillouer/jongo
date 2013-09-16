@@ -23,7 +23,7 @@ import org.jongo.ReflectiveObjectIdUpdater;
 import org.jongo.marshall.Marshaller;
 import org.jongo.marshall.Unmarshaller;
 import org.jongo.marshall.jackson.configuration.AbstractMappingBuilder;
-import org.jongo.query.JsonQueryFactory;
+import org.jongo.query.BsonQueryFactory;
 import org.jongo.query.QueryFactory;
 
 public class JacksonMapper implements Mapper {
@@ -68,9 +68,9 @@ public class JacksonMapper implements Mapper {
         }
 
         public Mapper build() {
-            JacksonEngine jacksonEngine = new JacksonEngine(innerMapping());
+            JacksonEngine jacksonEngine = new JacksonEngine(createMapping());
             if (queryFactory == null) {
-                queryFactory = new JsonQueryFactory(jacksonEngine);
+                queryFactory = new BsonQueryFactory(jacksonEngine);
             }
             if (objectIdUpdater == null) {
                 objectIdUpdater = new ReflectiveObjectIdUpdater(new JacksonIdFieldSelector());
