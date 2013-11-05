@@ -16,7 +16,7 @@
 
 package org.jongo.util;
 
-import com.foursquare.fongo.Fongo;
+import com.github.fakemongo.Fongo;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.WriteConcern;
