@@ -27,7 +27,15 @@ public class BinaryTest extends JongoTestCase {
             this.id = id;
         }
 
-        public String getName() {
+      @Override
+      public String toString() {
+        return "Friend{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            '}';
+      }
+
+      public String getName() {
             return name;
         }
 
