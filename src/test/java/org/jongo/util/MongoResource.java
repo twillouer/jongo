@@ -33,7 +33,6 @@ import de.flapdoodle.embed.process.config.io.ProcessOutput;
 import de.flapdoodle.embed.process.io.IStreamProcessor;
 import de.flapdoodle.embed.process.io.NullProcessor;
 import de.flapdoodle.embed.process.runtime.Network;
-
 import java.net.UnknownHostException;
 
 public class MongoResource {
@@ -99,9 +98,9 @@ public class MongoResource {
 
     public static class FongoInstance {
 
-      public static Mongo instance = getInstance();
+      public static MongoClient instance = getInstance();
 
-      private static Mongo getInstance() {
+      private static MongoClient getInstance() {
           return new Fongo("test").getMongo();
       }
     }
