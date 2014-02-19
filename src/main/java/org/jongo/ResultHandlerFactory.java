@@ -24,16 +24,16 @@ import org.jongo.marshall.Unmarshaller;
 class ResultHandlerFactory {
 
 
-    public static <T> ResultHandler<T> newMapper(final Class<T> clazz, final Unmarshaller unmarshaller) {
-        return new ResultUnmarshallingHandler<T>(unmarshaller, clazz);
+    public static <T> ResultHandler<T> newResultHandler(final Class<T> clazz, final Unmarshaller unmarshaller) {
+        return new UnmarshallingResultHandler<T>(unmarshaller, clazz);
     }
 
-    private static class ResultUnmarshallingHandler<T> implements ResultHandler<T> {
+    private static class UnmarshallingResultHandler<T> implements ResultHandler<T> {
 
         private final Unmarshaller unmarshaller;
         private final Class<T> clazz;
 
-        public ResultUnmarshallingHandler(Unmarshaller unmarshaller, Class<T> clazz) {
+        public UnmarshallingResultHandler(Unmarshaller unmarshaller, Class<T> clazz) {
             this.unmarshaller = unmarshaller;
             this.clazz = clazz;
         }

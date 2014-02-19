@@ -16,6 +16,7 @@
 
 package org.jongo;
 
+import com.mongodb.DBCursor;
 import org.bson.types.ObjectId;
 import org.jongo.model.Friend;
 import org.jongo.util.JongoTestCase;
@@ -28,7 +29,7 @@ import java.util.Iterator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class FindWithHintTest extends JongoTestCase {
+public class FindWithModifierTest extends JongoTestCase {
 
     private MongoCollection collection;
 
@@ -52,10 +53,31 @@ public class FindWithHintTest extends JongoTestCase {
 
         /* when */
         // force to use _id index instead of name index which is sparsed
-        Iterator<Friend> friends = collection.find().hint("{$natural: 1}").sort("{name: 1}").as(Friend.class).iterator();
+        Iterator<Friend> friends = collection.find().hint("{$natural: 1}").sort("{name: 1}").as(Friend.class);
 
         /* then */
         assertThat(friends.hasNext()).isTrue();
+    }
+
+    @Test
+    public void canUseQueryModifier() throws Exception {
+        /* given */
+        collection.save(new Friend(new ObjectId(), "John"));
+        collection.save(new Friend(new ObjectId(), "Robert"));
+
+        /* when */
+        Iterator<Friend> friends = collection.find()
+                .with(new QueryModifier() {
+                    public void modify(DBCursor cursor) {
+                        cursor.addSpecial("$maxScan", 1);
+                    }
+                })
+                .as(Friend.class);
+
+        /* then */
+        assertThat(friends.hasNext()).isTrue();
+        friends.next();
+        assertThat(friends.hasNext()).isFalse();
     }
 
 }

@@ -23,6 +23,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FindPartialFieldTest extends JongoTestCase {
@@ -59,6 +63,19 @@ public class FindPartialFieldTest extends JongoTestCase {
         collection.find("{name:'John'}").projection("{name:#}", 1).map(new AssertionResultHandler());
     }
 
+    @Test
+    public void canFindWithComplexProjection() throws Exception {
+        /* given */
+        collection.insert("{subElements: [{ name: \"foo\"},{ name: \"bar\"}]}");
+
+        /* when */
+        Iterator<Map> maps = collection.find().projection("{ subElements: {$elemMatch: {name: #} } }", "bar").as(Map.class);
+
+        Map map = maps.next();
+        assertThat(map.get("subElements")).isNotNull();
+        List subElements = ((List) map.get("subElements"));
+        assertThat(subElements).hasSize(1);
+    }
 
     @Test
     public void canFindOne() throws Exception {
@@ -80,6 +97,20 @@ public class FindPartialFieldTest extends JongoTestCase {
         Boolean result = collection.findOne("{name:'John'}").projection("{name:#}", 1).map(new AssertionResultHandler());
 
         assertThat(result).isTrue();
+    }
+
+    @Test
+    public void canFindOneWithComplexProjection() throws Exception {
+        /* given */
+        collection.insert("{subElements: [{ name: \"foo\"},{ name: \"bar\"}]}");
+
+        /* when */
+        Map map = collection.findOne().projection("{ subElements: {$elemMatch: {name: #} } }", "bar").as(Map.class);
+
+        assertThat(map).isNotNull();
+        assertThat(map.get("subElements")).isNotNull();
+        List subElements = ((List) map.get("subElements"));
+        assertThat(subElements).hasSize(1);
     }
 
     @Test

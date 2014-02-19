@@ -62,7 +62,11 @@ class Insert {
 
     public WriteResult insert(String query, Object... parameters) {
         DBObject dbQuery = queryFactory.createQuery(query, parameters).toDBObject();
-        return collection.insert(dbQuery, writeConcern);
+        if (dbQuery instanceof BasicDBList) {
+            return insert(((BasicDBList) dbQuery).toArray());
+        } else {
+            return collection.insert(dbQuery, writeConcern);
+        }
     }
 
     private Object preparePojo(Object pojo) {
@@ -104,7 +108,8 @@ class Insert {
         @Override
         public Object get(String key) {
             if ("_id".equals(key) && id != null) {
-                return id;
+                ObjectId oid = ObjectId.massageToObjectId(id);
+                return oid != null ? oid : id;
             }
             return super.get(key);
         }

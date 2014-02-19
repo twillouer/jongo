@@ -19,15 +19,17 @@ package org.jongo;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-class MongoIterator<E> implements Iterator<E>, Iterable<E> {
+public class MongoCursor<E> implements Iterator<E>, Iterable<E>, Closeable {
 
     private final DBCursor cursor;
     private final ResultHandler<E> resultHandler;
 
-    public MongoIterator(DBCursor cursor, ResultHandler<E> resultHandler) {
+    public MongoCursor(DBCursor cursor, ResultHandler<E> resultHandler) {
         this.cursor = cursor;
         this.resultHandler = resultHandler;
     }
@@ -49,6 +51,14 @@ class MongoIterator<E> implements Iterator<E>, Iterable<E> {
     }
 
     public Iterator<E> iterator() {
-        return this;
+        return new MongoCursor<E>(cursor.copy(), resultHandler);
+    }
+
+    public void close() throws IOException {
+        cursor.close();
+    }
+
+    public int count() {
+        return cursor.count();
     }
 }

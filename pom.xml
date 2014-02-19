@@ -26,7 +26,7 @@
 
     <groupId>org.jongo</groupId>
     <artifactId>jongo</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Jongo</name>
     <description>Query in Java as in Mongo shell</description>
@@ -76,8 +76,8 @@
 
     <properties>
         <mongo.version>[2.11.0,2.99)</mongo.version>
-        <jackson.version>2.2.3</jackson.version>
-        <bson4jackson.version>2.2.0</bson4jackson.version>
+        <jackson.version>2.3.0</jackson.version>
+        <bson4jackson.version>2.3.0</bson4jackson.version>
     </properties>
 
     <dependencies>
@@ -168,7 +168,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>1.31</version>
+            <version>1.40</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -218,12 +218,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.4</version>
+                <version>3.3</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -238,6 +233,11 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.directory}/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -256,7 +256,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.8.1</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -264,6 +263,26 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.4.0</version>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <manifestLocation>${project.build.directory}</manifestLocation>
+                            <instructions>
+                                <Import-Package>com.mongodb.*;version="${mongo.version}",org.bson.*;version="${mongo.version}",*</Import-Package>
+                            </instructions>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -279,8 +298,8 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>1.1</version>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.8.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -297,8 +316,12 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.8.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -359,6 +382,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>1.3.1</version>
                         <executions>
                             <execution>
                                 <id>enforce-custom-cloudbees-settings-exists</id>

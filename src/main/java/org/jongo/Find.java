@@ -24,7 +24,10 @@ import org.jongo.marshall.Unmarshaller;
 import org.jongo.query.Query;
 import org.jongo.query.QueryFactory;
 
-import static org.jongo.ResultHandlerFactory.newMapper;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.jongo.ResultHandlerFactory.newResultHandler;
 
 public class Find {
 
@@ -33,8 +36,8 @@ public class Find {
     private final Unmarshaller unmarshaller;
     private final QueryFactory queryFactory;
     private final Query query;
-    private Query fields, sort, hint;
-    private Integer limit, skip;
+    private final List<QueryModifier> modifiers;
+    private Query fields;
 
     Find(DBCollection collection, ReadPreference readPreference, Unmarshaller unmarshaller, QueryFactory queryFactory, String query, Object... parameters) {
         this.readPreference = readPreference;
@@ -42,29 +45,19 @@ public class Find {
         this.collection = collection;
         this.queryFactory = queryFactory;
         this.query = this.queryFactory.createQuery(query, parameters);
+        this.modifiers = new ArrayList<QueryModifier>();
     }
 
-    public <T> Iterable<T> as(final Class<T> clazz) {
-        return map(newMapper(clazz, unmarshaller));
+    public <T> MongoCursor<T> as(final Class<T> clazz) {
+        return map(newResultHandler(clazz, unmarshaller));
     }
 
-    public <T> Iterable<T> map(ResultHandler<T> resultHandler) {
+    public <T> MongoCursor<T> map(ResultHandler<T> resultHandler) {
         DBCursor cursor = new DBCursor(collection, query.toDBObject(), getFieldsAsDBObject(), readPreference);
-        addOptionsOn(cursor);
-        return new MongoIterator<T>(cursor, resultHandler);
-    }
-
-    private void addOptionsOn(DBCursor cursor) {
-        if (limit != null)
-            cursor.limit(limit);
-        if (skip != null)
-            cursor.skip(skip);
-        if (sort != null) {
-            cursor.sort(sort.toDBObject());
+        for (QueryModifier modifier : modifiers) {
+            modifier.modify(cursor);
         }
-        if (hint != null) {
-            cursor.hint(hint.toDBObject());
-        }
+        return new MongoCursor<T>(cursor, resultHandler);
     }
 
     public Find projection(String fields) {
@@ -77,23 +70,46 @@ public class Find {
         return this;
     }
 
-    public Find limit(int limit) {
-        this.limit = limit;
+    public Find limit(final int limit) {
+        this.modifiers.add(new QueryModifier() {
+            public void modify(DBCursor cursor) {
+                cursor.limit(limit);
+            }
+        });
         return this;
     }
 
-    public Find skip(int skip) {
-        this.skip = skip;
+    public Find skip(final int skip) {
+        this.modifiers.add(new QueryModifier() {
+            public void modify(DBCursor cursor) {
+                cursor.skip(skip);
+            }
+        });
         return this;
     }
 
     public Find sort(String sort) {
-        this.sort = queryFactory.createQuery(sort);
+        final DBObject sortDBObject = queryFactory.createQuery(sort).toDBObject();
+        this.modifiers.add(new QueryModifier() {
+            public void modify(DBCursor cursor) {
+                cursor.sort(sortDBObject);
+            }
+        });
         return this;
     }
 
-    public Find hint(final String hint) {
-        this.hint = queryFactory.createQuery(hint);
+    public Find hint(String hint) {
+        final DBObject hintDBObject = queryFactory.createQuery(hint).toDBObject();
+        this.modifiers.add(new QueryModifier() {
+            public void modify(DBCursor cursor) {
+                cursor.hint(hintDBObject);
+            }
+        });
+        return this;
+    }
+
+    public Find with(QueryModifier queryModifier) {
+        this.modifiers.add(queryModifier);
         return this;
     }
 
